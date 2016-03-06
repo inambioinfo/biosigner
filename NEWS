@@ -1,0 +1,359 @@
+CHANGES IN VERSION 0.99.10
+------------------------------
+PACKAGE MODIFICATION
+
+    o grDevices, graphics, stats, utils imported in DESCRIPTION
+
+CHANGES IN VERSION 0.99.9
+------------------------------
+PACKAGE MODIFICATION
+
+    o vignette update
+
+CHANGES IN VERSION 0.99.8
+------------------------------
+PACKAGE MODIFICATION
+
+    o adding the import of the following function in NAMESPACE: abline arrows axis box boxplot dev.new dev.off head image layout median mtext par pdf rect tail title var
+    o defining the getAccuracyMN and getSignatureLs accessors
+
+CHANGES IN VERSION 0.99.7
+------------------------------
+PACKAGE MODIFICATION
+
+    o additional unit test silenced in test_biosign_randomforest (because of errors on the moscato2 Windows 2008 platform)
+
+CHANGES IN VERSION 0.99.6
+------------------------------
+PACKAGE MODIFICATION
+
+    o unit tests silenced in test_biosign_randomforest and test_biosign_predict (because of errors on the moscato2 Windows 2008 platform)
+
+CHANGES IN VERSION 0.99.5
+------------------------------
+PACKAGE MODIFICATION
+
+    o importing of packages in NAMESPACE fixed
+    o use of S4 methods (instead of S3)
+
+CHANGES IN VERSION 0.99.4
+------------------------------
+PACKAGE MODIFICATION
+
+    o correction of a bug in the test_biosign_plsdaF test function
+
+CHANGES IN VERSION 0.99.0
+------------------------------
+PACKAGE MODIFICATION
+
+    o set version number to 0.99.0 for Bioconductor
+
+CHANGES IN VERSION 0.5.13
+------------------------------
+
+NEW FEATURES
+
+    o biosign: printing messages (for development purpose) removed
+
+CHANGES IN VERSION 0.5.12
+------------------------------
+
+NEW FEATURES
+
+    o biosign: new ordering of tierMC (previsously by decreasing row sums): now rows containing maximum tier are first grouped, before being ordered by decreasing row sums within each group
+    o biosign: remove deprecated CV functions and their calls; remove deprecated arguments
+
+CHANGES IN VERSION 0.5.11
+------------------------------
+
+NEW FEATURES
+
+    o diaplasma dataset: minor changes in variable names (column names of dataMatrix and row names of variableMetadata)
+
+CHANGES IN VERSION 0.5.10
+------------------------------
+
+NEW FEATURES
+
+    o unit tests: now run on 'diaplasma' dataset (instead of 'sacurine' from the 'ropls' package)
+
+CHANGES IN VERSION 0.5.9
+------------------------------
+
+NEW FEATURES
+
+    o predict.biosign: predictions on 'S+A' signatures now possible
+
+BUG FIXES
+
+    o diaplasma dataset: formatting of dataMatrix column names (and variableMetadata row names)
+
+CHANGES IN VERSION 0.5.8
+------------------------------
+
+NEW FEATURES
+
+    o diaplasma dataset: annotations (when available) annotated to column names of dataMatrix (and row names of variableMetadata)
+
+CHANGES IN VERSION 0.5.7
+------------------------------
+    
+BUG FIXES
+  
+    o biosign: now correctly attribute grade from score when one or more methods has no S variables
+    o plot.biosign: management of errors when signatures are empty
+
+CHANGES IN VERSION 0.5.6
+------------------------------
+
+NEW FEATURES
+
+    o biosign: now call itself on the best half variables when no significant variables are found
+    o biosign: now produce grade A and less when no S are produced
+    
+BUG FIXES
+  
+    o biosign: remove an unnecessary test in the 'translate' code
+
+CHANGES IN VERSION 0.5.5
+------------------------------
+
+NEW FEATURES
+
+    o biosign: now correctly handle non significant rank/results for one or two methods when at least one other is significant
+    
+BUG FIXES
+  
+    o now ensure 20% of out of the bag samples in the bootstrap extraction
+    o predict: handling void signatures in predictions
+
+CHANGES IN VERSION 0.5.4
+------------------------------
+
+NEW FEATURES
+
+    o minor modifications
+
+CHANGES IN VERSION 0.5.3
+------------------------------
+
+NEW FEATURES
+
+    o minor modifications
+
+
+CHANGES IN VERSION 0.5.2
+------------------------------
+
+NEW FEATURES
+
+    o first complete version of the package (including the vignette)
+
+
+CHANGES IN VERSION 0.5.1
+------------------------------
+
+NEW FEATURES
+
+    o diaplasma dataset added
+    
+CHANGES IN VERSION 0.4.13
+------------------------------
+
+NEW FEATURES
+
+    o plot: new typeC = "boxplot" argument for plotting the individual features from the signature    
+    o first draft of vignette
+
+CHANGES IN VERSION 0.4.12
+------------------------------
+
+NEW FEATURES
+    
+    o 'predict' method now available
+
+CHANGES IN VERSION 0.4.11
+------------------------------
+
+NEW FEATURES
+    
+    o 'AS' model and signature returned as outputs from 'biosign'
+    o variables with NA are removed from the 'x' matrix prior to Random Forest and SVM modeling
+    o if missing, 'x' column names are set to 'V1', ..., 'Vp' (where p is the number of variables)
+    o 'x' data frame converted to a matrix (generates a warning)
+    o 'y' character vector converted to a factor (generates a warning)    
+
+CHANGES IN VERSION 0.4.10
+------------------------------
+
+NEW FEATURES
+    
+    o new argument checks added
+
+CHANGES IN VERSION 0.4.9
+------------------------------
+
+NEW FEATURES
+    
+    o signatures from S and AS models returned by biosign
+
+CHANGES IN VERSION 0.4.8
+------------------------------
+
+BUG FIXES
+    
+    o in case of no significant variable found, a message is returned (instead of an error)
+
+CHANGES IN VERSION 0.4.7
+------------------------------
+
+NEW FEATURES
+    
+    o unit tests updated
+
+CHANGES IN VERSION 0.4.6
+------------------------------
+
+BUG FIXES
+    
+    o minor bug corrections in biosign (accuracy output) and plot.biosign (tiers colors)
+
+CHANGES IN VERSION 0.4.5
+------------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o biosign: accuracy of the 'S+A' model is now computed (in addition to the full and 'S' models)
+    
+    o plot.biosign: 'S' tiers displayed by default (in addition to 'A' when at least one of the restricted models has an accuracy < 80%
+
+CHANGES IN VERSION 0.4.4
+------------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o plot.biosign: redesigned to display the tiers ('S' and 'A' by default)
+
+CHANGES IN VERSION 0.4.3
+------------------------------
+
+NEW FEATURES
+
+    o biosign: binary search implemented to speed up the search for the number of features
+
+CHANGES IN VERSION 0.4.2
+------------------------------
+
+NEW FEATURES
+
+    o signatures of only one feature are now possible
+
+CHANGES IN VERSION 0.4.1
+------------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o new names:
+        package: 'biosigner' (instead of 'rdiagnosign')
+        main method and class: 'biosign' (instead of 'diagnosign')
+    
+    o biosign:
+        new 'recursiveL' argument to obtain shorter and more stable signatures
+        
+CHANGES IN VERSION 0.3.8
+------------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o diasgnosign: Full and restricted models now available in the outputs
+
+CHANGES IN VERSION 0.3.7
+------------------------------
+
+NEW FEATURES
+
+    o Change the evaluation method: now compute the balanced classification rate.
+
+CHANGES IN VERSION 0.3.6
+------------------------------
+
+NEW FEATURES
+
+    o unit tests added
+
+CHANGES IN VERSION 0.3.5
+------------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o 'diagnosign'
+        'randomforest' method now available
+
+CHANGES IN VERSION 0.3.4
+------------------------------
+
+NEW FEATURES
+
+    o Galaxy module for rdiagnosign has been developed
+    o ggplot2 removed from dependencies (since it is not used currently)
+
+CHANGES IN VERSION 0.3.3
+------------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+    
+    o renaming some of the 'dignosign' arguments for simplicity
+        crossValI    -> crossvalI
+        nbootI       -> bootI
+        permutationI -> permI
+        pvalThreshN  -> pvalN
+
+CHANGES IN VERSION 0.3.2
+------------------------------
+
+NEW FEATURES
+    
+    o bootstraping included into 'diagnosign' (instead of cross-validation)
+
+CHANGES IN VERSION 0.3.1
+------------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o package renamed: 'rdiagnosign' (instead of 'multimark')
+        class 'diagnosign'
+        methods 'diagnosign', 'print.diagnosign', 'plot.diagnosign'
+    
+CHANGES IN VERSION 0.2.3
+------------------------------
+
+NEW FEATURES
+
+    o internal parameter 'alpha' set to 0.05 instead of 0
+
+CHANGES IN VERSION 0.2.2
+------------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o 'signastic' function (replaces 'fsi'):
+        to compute significant features and corresponding models
+
+CHANGES IN VERSION 0.2.1
+------------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o rename data set tables
+        proMN -> dataMatrix
+        obsDF -> sampleMetadata
+        feaDF -> variableMetadata
+
+CHANGES IN VERSION 0.2.0
+------------------------------
+
+NEW FEATURES
+
+    o 'pls' method available (in addition to 'svm')
+
+
