@@ -104,8 +104,8 @@ get.var.score <- function(model = NULL,
     #initialised the score
     score <- rep(0, ncol(x.train))
     ## get the variable with a vip:
-    ind.vip <- which(colnames(x.train) %in% names(model$vipVn))
-    score[ind.vip] <- model$vipVn
+    ind.vip <- which(colnames(x.train) %in% names(getVipVn(model)))
+    score[ind.vip] <- getVipVn(model)
   }
   else if(class(model)=="randomForest"){
     score <- model$importance[,1]
@@ -156,7 +156,7 @@ get.REM <- function(x=NULL, y=NULL,
 
   if(length(var.cte) > 0)
     x.test <- x.test[, -var.cte, drop=FALSE]
-  
+
   prediction <- get.prediction(model,x.test,predict.obj.newdat.name,predict.args)
   ## generate the evaluation
   evaluation <- get.evaluation(prediction, y.test)
@@ -275,7 +275,7 @@ get.REMs.FSI <- function(REMs=NULL, DSV=NULL, response=NULL,
     evaluation <- rep(0,nperm*length(REMs$REM))
     # generate the permutated data nperm times
     ind <- which(REMs$rank >= REMs$rank[ind.order[i]])
-    for( j in 1:length(REMs$REM)){  
+    for( j in 1:length(REMs$REM)){
       for( s in 1:nperm ){
         # permute variables
         profile.perm <- apply(DSV$dataMatrix[,ind,drop=FALSE], 2, sample)
@@ -322,7 +322,7 @@ get.FSI <- function(DSV=NULL, response=NULL,
                      predict.args=NULL,
                      nboot=0,
                      nperm = 0,
-                     alpha = 0, 
+                     alpha = 0,
                      fixed.rank = FALSE){
   REMs <- get.REMs(DSV = DSV, response = response,
                    method=method,

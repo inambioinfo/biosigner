@@ -697,7 +697,7 @@ setMethod("predict", signature(object = "biosign"),
                                 return(NULL)
                             else
                                 return(switch(class(model),
-                                              opls = model[["fitted"]],
+                                              opls = fitted(model),
                                               randomForest = model[["predicted"]],
                                               svm = model[["fitted"]]))
                         })

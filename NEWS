@@ -1,3 +1,9 @@
+CHANGES IN VERSION 0.99.11
+------------------------------
+BUG FIXED
+
+    o in vignette (due to switch in S4 methods for ropls)
+
 CHANGES IN VERSION 0.99.10
 ------------------------------
 PACKAGE MODIFICATION
