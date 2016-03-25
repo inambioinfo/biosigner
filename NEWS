@@ -1,3 +1,13 @@
+CHANGES IN VERSION 0.99.12
+------------------------------
+PACKAGE MODIFICATION
+
+    o Wellcome to the biosigner package for feature selection from omics datasets
+    o The package implements a new wrapper method detecting the features which are important for PLS-DA, Random Forest, or SVM binary classification    
+    o The package contains the 'diaplasma' LC-MS metabolomics real dataset (plasma samples from diabetic type 1 and 2 patients)    
+    o Please see the vignette for details about the approach and package use
+    o The corresponding publication is currently under review.   
+
 CHANGES IN VERSION 0.99.11
 ------------------------------
 BUG FIXED
