@@ -1,0 +1,17 @@
+citHeader("To cite the biosigner package in publications use:")
+
+citEntry(entry="article",  
+   author=c(
+   person("P.", "Rinaudo"), person("C.", "Junot"), person(c("E.", "A."), "Thevenot")),
+   title="biosigner: A new method for the discovery of restricted and stable molecular signatures from omics data",
+   journal="submitted",
+   year="submitted",
+   volume="",
+   pages="-",
+   url="",
+   textVersion = paste("Rinaudo, P., Junot, C., Thevenot, E.A.",
+                       "submitted.",
+                       "biosigner: A new method for the discovery of restricted and stable molecular signatures from omics data.",
+                       "submitted.",
+                       ":",
+                       "-."))

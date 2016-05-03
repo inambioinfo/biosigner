@@ -1,0 +1,14 @@
+import(methods)
+
+import(e1071)
+import(randomForest)
+import(ropls)
+
+export(biosign)
+exportMethods(plot, predict, show, getAccuracyMN, getSignatureLs)
+exportClasses(biosign)
+
+importFrom("grDevices", "dev.new", "dev.off", "pdf")
+importFrom("graphics", "abline", "arrows", "axis", "box", "boxplot", "image", "layout", "mtext", "par", "rect", "title")
+importFrom("stats", "median", "var")
+importFrom("utils", "head", "tail")
