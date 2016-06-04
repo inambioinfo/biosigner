@@ -1,107 +1,138 @@
 ## Package: biosigner
-## Details: functions to generate and manipulate bootstrap from DSV objects
+## Details: functions to generate and manipulate bootstrap from dataLs objects
 ## Authors: Philippe Rinaudo and Etienne Thevenot (CEA)
 
 
-## INPUT: DSV: a DSV object,
-##        boot.size (interger): the size of the number of obervations to sample (default is set to the number of observations of DSV)
-##        boot.sunder (boolean): controle the proportion in the boostrapping
-##        response (character): a response name, i.e. name of a column of the observations of DSV
-## OUTPUT: return a the DSV input with a supplementary dataframe (bootDF) contaning all needed information to extract train and test sub DSV.
-extract.bootstrap <- function(DSV=NULL, boot.size=0, boot.sunder=FALSE, response=NULL){
-  # Initialization of the bootDF
-  bootDF <- data.frame(row.names=row.names(DSV$sampleMetadata))
-  bootDF$Freq <- 0
-  if(boot.size==0)
-    boot.size <- nrow(DSV$sampleMetadata)
+## INPUT: dataLs: a dataLs object,
+##        bootI (interger): the size of the number of obervations to sample
+##                          (default is set to the number of observations of dataLs)
+##        bootSubSampL (boolean): Should only 80% of the samples be used for bootstraping
+##                                (ensuring 20% of out of the bag samples)
+##        respC (character): a response name, i.e. name of a column of the observations
+##                           of dataLs
+## OUTPUT: returns the dataLs input with a supplementary dataframe (bootDF) contaning
+##         all needed information to extract train and test sub dataLs.
+bootExtractF <- function(dataLs = NULL,
+                         bootI = 0,
+                         bootSubSampL = FALSE,
+                         respC = NULL){
 
-  # Bootstrapping of the observations
-  boot.sampling <- c()
-  if(boot.sunder & !is.null(response)){
-    # get the responses
-    # for all responses get the relative number of sample by bootstrapping
-    boot.sampling <- c()
-    res.all <- unique(DSV$sampleMetadata[[response]])
-    for(res in res.all){
-      prop.res <- sum( DSV$sampleMetadata[[response]] == res )
-      # Remove 0.2 samples to ensure 0.2 OOB samples
-      obs.res <- DSV$sampleMetadata[which(DSV$sampleMetadata[,response]==res),,drop=FALSE]
-      ind.0.8 <- sort(sample(x = 1:nrow(obs.res), size = round(0.8*nrow(obs.res)), replace = FALSE)) 
-      boot.sampling <- c(boot.sampling,table(sample(row.names(obs.res[ind.0.8,,drop=FALSE]), size=prop.res, replace=TRUE)))
-    }
-  }
-  else
-    boot.sampling <- table(sample(row.names(DSV$sampleMetadata), size=boot.size, replace=TRUE))
+    ## Initialization of bootDF
+    bootDF <- data.frame(row.names = row.names(dataLs$sampleMetadata))
+    bootDF$freqVn <- numeric(nrow(bootDF))
 
-  # Updating the bootDF
-  indices <- match(names(boot.sampling), rownames(bootDF))
+    if(bootI == 0)
+        bootI <- nrow(dataLs$sampleMetadata)
 
-  bootDF$Freq[indices] <- boot.sampling
-  # Set Train or not in the Train column
-  bootDF$Train <- bootDF$Freq != 0
+    ## Bootstrapping of the observations
+    bootFreqVi <- numeric()
+    if(bootSubSampL && !is.null(respC)){
+        ## gets the responses
+        ## for all responses gets the relative number of samples by bootstrapping
+        classVc <- unique(dataLs$sampleMetadata[[respC]])
 
-  # Checking for constant variables
+        ## classI <- min(table(dataLs$sampleMetadata[[respC]]))
 
-  # Add the bootDF to the input DSV object and return the DSV object
-  DSV$bootDF <- bootDF
-  return(DSV)
+        for(classC in classVc){
+
+            classI <- sum(dataLs$sampleMetadata[[respC]] == classC)
+
+            ## Removing 0.2 samples to ensure 0.2 OOB samples
+            sampleMetaClassDF <- dataLs$sampleMetadata[which(dataLs$sampleMetadata[, respC] == classC), , drop = FALSE]
+            bootClassVi <- sort(sample(1:nrow(sampleMetaClassDF),
+                                       size = round(0.8 * nrow(sampleMetaClassDF)),
+                                       replace = FALSE))
+            bootFreqVi <- c(bootFreqVi,
+                            table(sample(row.names(sampleMetaClassDF[bootClassVi, , drop = FALSE]),
+                                         size = classI,
+                                         replace = TRUE)))
+        }
+    } else
+        bootFreqVi <- table(sample(row.names(dataLs$sampleMetadata),
+                                   size = bootI,
+                                   replace = TRUE))
+
+    ## Updating the bootDF
+    bootVi <- match(names(bootFreqVi), rownames(bootDF))
+    bootDF$freqVn[bootVi] <- bootFreqVi
+
+    ## Set TRUE or FALSE in the trainVl column
+    bootDF$trainVl <- bootDF$freqVn != 0
+
+    ## Checking for constant variables
+
+    ## Adding the bootDF to the dataLs object
+    dataLs$bootDF <- bootDF
+
+    return(dataLs)
 }
 
-## INPUT: DSV: a DSV object,
-## OUTPUT: a profile matrix, generated from the bootstrap dataframe of DSV and corresponding to the observations tagged as TRAIN=TRUE with their frequencies
-get.training.profile.boot <- function(DSV=NULL){
-  if(is.null(DSV$bootDF))
-    return(DSV$dataMatrix)
-  # get profile with only training observations
-  train.sub.profile <- DSV$dataMatrix[which(DSV$bootDF$Train==TRUE),,drop=FALSE]
-  train.boot <- DSV$bootDF[which(DSV$bootDF$Train==TRUE),,drop=FALSE]
+## INPUT: dataLs: a dataLs object,
+## OUTPUT: a profile matrix, generated from the bootstrap dataframe of dataLs and corresponding to the observations tagged as TRAIN=TRUE with their frequencies
+getBootTrainxF <- function(dataLs = NULL){
 
-  boot.size <- sum(DSV$bootDF$Freq)
+  if(is.null(dataLs$bootDF))
+    return(dataLs$dataMatrix)
 
-  # Duplicating profile sample relatively to the bootstrap freq
-  train.profile <- matrix(rep(train.sub.profile, rep(train.boot$Freq,ncol(train.sub.profile))),boot.size, ncol(train.sub.profile))
-  colnames(train.profile) <- colnames(DSV$dataMatrix)
-  return(train.profile)
+  ## get profile with only training observations
+  xTrainMN <- dataLs$dataMatrix[which(dataLs$bootDF$trainVl == TRUE), , drop = FALSE]
+  bootTrainDF <- dataLs$bootDF[which(dataLs$bootDF$trainVl == TRUE), , drop = FALSE]
+
+  bootI <- sum(dataLs$bootDF$freqVn)
+
+  ## Duplicating profile sample relatively to the bootstrap freq
+  xTrainMN <- matrix(rep(xTrainMN,
+                         rep(bootTrainDF$freqVn,
+                             ncol(xTrainMN))),
+                     bootI,
+                     ncol(xTrainMN))
+  colnames(xTrainMN) <- colnames(dataLs$dataMatrix)
+  return(xTrainMN)
 }
 
-## INPUT: DSV: a DSV object,
-##        response (character): a response name, i.e. name of a column of the observations of DSV
-## OUTPUT: a factor response, generated from the bootstrap dataframe of DSV and corresponding to the observations tagged as TRAIN=TRUE with their frequencies
-get.training.response.boot <- function(DSV=NULL, response=NULL){
-  if(is.null(DSV$bootDF))
-    return(DSV$sampleMetadata[,response])
+## INPUT: dataLs: a dataLs object,
+##        respC (character): a response name, i.e. name of a column of the observations of dataLs
+## OUTPUT: a factor response, generated from the bootstrap dataframe of dataLs and corresponding to the observations tagged as TRAIN=TRUE with their frequencies
+getBootTrainyF <- function(dataLs=NULL, respC=NULL){
+  if(is.null(dataLs$bootDF))
+    return(dataLs$sampleMetadata[, respC])
   # get only training observations
-  train.sub.obs<- DSV$sampleMetadata[which(DSV$bootDF$Train==TRUE),,drop=FALSE][,response]
-  train.boot <- DSV$bootDF[which(DSV$bootDF$Train==TRUE),,drop=FALSE]
+  yTrainFc <- dataLs$sampleMetadata[which(dataLs$bootDF$trainVl == TRUE), , drop = FALSE][, respC]
+  bootTrainDF <- dataLs$bootDF[which(dataLs$bootDF$trainVl == TRUE), , drop = FALSE]
 
   # Duplicating sample response relatively to the bootstrap freq
-  train.response <- factor(rep(train.sub.obs, train.boot$Freq))
-  return(train.response)
+  yTrainFc <- factor(rep(yTrainFc, bootTrainDF$freqVn))
+  return(yTrainFc)
 }
 
-## INPUT: DSV: a DSV object,
-## OUTPUT: a profile matrix, generated from the bootstrap dataframe of DSV and corresponding to the observations tagged as TRAIN=FALSE
-get.test.profile.boot <- function(DSV=NULL){
-  if(is.null(DSV$bootDF))
-    return(DSV$dataMatrix)
+## INPUT: dataLs: a dataLs object,
+## OUTPUT: a profile matrix, generated from the bootstrap dataframe of dataLs and corresponding to the observations tagged as TRAIN=FALSE
+getBootTestxF <- function(dataLs=NULL){
+
+  if(is.null(dataLs$bootDF))
+    return(dataLs$dataMatrix)
   # get profile with only test observations
-  test.profile <- DSV$dataMatrix[which(DSV$bootDF$Train==FALSE),,drop=FALSE]
+  xTestMN <- dataLs$dataMatrix[which(dataLs$bootDF$trainVl == FALSE), , drop=FALSE]
 
-  return(test.profile)
+  return(xTestMN)
+
 }
 
-## INPUT: DSV: a DSV object,
-##        response (character): a response name, i.e. name of a column of the observations of DSV
-## OUTPUT: a factor response, generated from the bootstrap dataframe of DSV and corresponding to the observations tagged as TRAIN=FALSE
-get.test.response.boot <- function(DSV=NULL, response=NULL){
-  if(is.null(DSV$bootDF))
-    return(DSV$sampleMetadata[,response])
+## INPUT: dataLs: a dataLs object,
+##        respC (character): a response name, i.e. name of a column of the observations of dataLs
+## OUTPUT: a factor response, generated from the bootstrap dataframe of dataLs and corresponding to the observations tagged as TRAIN=FALSE
+getBootTestyF <- function(dataLs=NULL, respC=NULL){
+
+  if(is.null(dataLs$bootDF))
+    return(dataLs$sampleMetadata[, respC])
   # get only test observations
-  test.response <- factor(DSV$sampleMetadata[which(DSV$bootDF$Train==FALSE),,drop=FALSE][,response])
-  return(test.response)
+  yTestFc <- factor(dataLs$sampleMetadata[which(dataLs$bootDF$trainVl==FALSE), , drop=FALSE][, respC])
+
+  return(yTestFc)
+
 }
 
-get.ind.test.profile.boot <- function(DSV=NULL){
-  return(which(DSV$bootDF$Train==FALSE))
-}
+getBootTestIndF <- function(dataLs = NULL)
+  return(which(dataLs$bootDF$trainVl == FALSE))
+
 

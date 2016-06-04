@@ -1,3 +1,34 @@
+## Package: biosigner
+## Details: Methods for biosign objects:
+##             biosign, show, plot, predict
+##             getAccuracyMN, getSignatureLs
+## Authors: Philippe Rinaudo and Etienne Thevenot (CEA)
+
+## Note: Hierarchy of helper function calls:
+##
+##1..biosign                           methods-biosign_class
+##   2..getTierF                       helpers_significance
+##      3..getBootSignificanceF        helpers_significance
+##         4..getBootModelF            helpers_model
+##            5..getBootExtract        helpers_bootstrap
+##            5..getModelAccuRankF     helpers_model
+##               6..getBootTrainxF     helpers_bootstrap
+##               6..getBootTrainyF     helpers_bootstrap
+##               6..getBootTestxF      helpers_bootstrap
+##               6..getBootTestyF      helpers_bootstrap
+##               6..getModelF          helpers_model
+##               6..getPredictionF     helpers_model
+##               6..getAccuracyF       helpers_model
+##               6..getImportanceF     helpers_model
+##            5..getBootTestIndF       helpers_bootstrap
+##            5..getBootSummaryF       helpers_model
+##         4..getSignificanceF         helpers_significance
+##            5..getPredictionF        helpers_model
+##            5..getAccuracyF          helpers_model
+##   2..getBootSignificanceF           helpers_significance
+##      3..getModelF                   helpers_model
+
+
 setGeneric("biosign", function(x, ...) standardGeneric("biosign"))
 
 setMethod("biosign", signature(x = "data.frame"),
@@ -83,82 +114,32 @@ function(x,
 
     ## signatures
 
-    fsiResLs <- vector(mode = "list", length = length(methodVc))
-    names(fsiResLs) <- methodVc
-
     datasetLs <- list(dataMatrix = xMN,
                       sampleMetadata = data.frame(row.names = rownames(xMN),
-                          response = yFc),
+                          respC = yFc),
                       variableMetadata = data.frame(row.names = colnames(xMN),
                           name. = colnames(xMN)))
     tierMN <- matrix(0, nrow = ncol(xMN), ncol = length(methodVc))
     rownames(tierMN) <- colnames(xMN)
     colnames(tierMN) <- methodVc
 
-    stop.rec <- vector(mode = "list", length = length(methodVc))
-    names(stop.rec) <- methodVc
+    accuVn <- numeric(length(methodVc))
+    stopIterVl <- logical(length(methodVc))
+    names(stopIterVl) <- names(accuVn) <- methodVc
 
     for(methodC in methodVc) {
-        ## Initialisation (first iteration step)
-        fsiResLs[[methodC]] <- fsi(datasetLs,
-                                   "response",
-                                   methodC,
-                                   nboot = bootI,
-                                   nperm = permI,
-                                   alpha = pvalN,
-                                   fixed.rank = fixRankL)
-        ## Begin iteration step
-        # extract significant variable in the lastest recursive step
-        var.selected <- names(which(fsiResLs[[methodC]]$FSI <= pvalN & fsiResLs[[methodC]]$FSI >= 0))
-        if(length(var.selected) < 1){
-          var.selected <- fsiResLs[[methodC]]$feature[which(fsiResLs[[methodC]]$rank %in% 1:(nrow(datasetLs$variableMetadata)/2))]
-          ind.selected <- which(rownames(datasetLs$variableMetadata) %in% var.selected)
-          tierMN[ind.selected, methodC] <- tierMN[ind.selected, methodC] - 1
-        }
-        stop.rec[[methodC]] <- FALSE
-        nb.rec <- 0
-        #fsi.rec <- rep(-1, nrow(datasetLs$variableMetadata))
-        # Next line is not actually used
-        permI.rec <- permI * ceiling(nrow(datasetLs$variableMetadata) / length(var.selected))
-        while(length(var.selected) >= 1 & stop.rec[[methodC]] == FALSE){
-          # while the significant variables of the current step is not the same as the ones of the previous step (stop.rec)
-          # extract the data with only the significant variable of the previous step
-          datasetLs.rec <- datasetLs
-          ind.selected <- which(rownames(datasetLs$variableMetadata) %in% var.selected)
-          # inscrease the tiers of the previous significant variables
-          tierMN[ind.selected, methodC] <- tierMN[ind.selected, methodC] + 1
-          # extraction
-          datasetLs.rec$dataMatrix <- datasetLs.rec$dataMatrix[, ind.selected, drop = FALSE]
-          datasetLs.rec$variableMetadata <- datasetLs.rec$variableMetadata[ ind.selected, , drop = FALSE]
-          # computing the fsi for current step
-          fsi.rec <- fsi(datasetLs.rec,
-                         "response",
-                         methodC,
-                         nboot = bootI,
-                         nperm = permI,
-                         alpha = pvalN,
-                         fixed.rank = fixRankL)
-          # checking if the number of significant variables has changed, else stop the rec
-          if(length(var.selected) != length(names(which(fsi.rec$FSI <= pvalN & fsi.rec$FSI >= 0))) ){
-            # check if we need to iterate on the best half part (ie no signi var found).
-            if(length(var.selected) > 1 & length(names(which(fsi.rec$FSI <= pvalN & fsi.rec$FSI >= 0))) < 1 ){
-              var.selected <- fsi.rec$feature[which(fsi.rec$rank %in% 1:(nrow(datasetLs.rec$variableMetadata)/2))]
-              ind.selected <- which(rownames(datasetLs$variableMetadata) %in% var.selected)
-              tierMN[ind.selected, methodC] <- tierMN[ind.selected, methodC] - 1
-            }
-            else{
-              var.selected <- names(which(fsi.rec$FSI <= pvalN & fsi.rec$FSI >= 0))
-            }
-            permI.rec <- permI.rec * ceiling(nrow(datasetLs.rec$variableMetadata) / length(var.selected))
-          }
-          else{
-            stop.rec[[methodC]] <- TRUE
-          }
-        }
-        # update the fsiResLs TODO: ACTUALLY NOT USED ANYMORE !! CHECK IT
-        ind.selected <- which(rownames(datasetLs$variableMetadata) %in% var.selected)
-        fsiResLs[[methodC]]$FSI[ind.selected] <- fsi.rec$FSI
-        fsiResLs[[methodC]]$FSI[-ind.selected] <- -1
+
+        tierMetLs <- getTierF(datasetLs = datasetLs,
+                              methodC = methodC,
+                              bootI = bootI,
+                              permI = permI,
+                              pvalN = pvalN,
+                              fixRankL = fixRankL)
+
+        tierMN[, methodC] <- tierMetLs[["tierVn"]]
+        accuVn[methodC] <- tierMetLs[["accuracyN"]]
+        stopIterVl[methodC] <- tierMetLs[["stopIterL"]]
+
     }
 
     ## Formatting, ordering, and displaying results
@@ -173,7 +154,7 @@ function(x,
 
     modelLs <- vector(mode = "list", length = length(methodVc))
     names(modelLs) <- methodVc
-    signatureLs <- modelLsAS <- modelLs ## void models are NULL
+    signatureLs <- modelLsAS <- modelLs ## void models are empty lists
     for(sgnI in 1:length(signatureLs))
         signatureLs[[sgnI]] <- character() ## void signatures are character(0)
     signatureLsAS <- signatureLs
@@ -185,7 +166,8 @@ function(x,
             tierVn <- tierMN[, methodC]
             translate <- rep("E", length(unique(tierVn)))
             if(max(tierVn) > 0){
-                if(stop.rec[[methodC]]){
+                ## if(stop.rec[[methodC]]){
+                if(stopIterVl[methodC]){
                     translate[max(tierVn)+1] <- "S"
                     if(max(tierVn) > 1)
                         translate[max(tierVn)] <- "A"
@@ -206,7 +188,7 @@ function(x,
                         translate[max(tierVn)-2] <- "D"
                 }
             }
-            tierVn <- translate[tierVn+1]
+            tierVn <- translate[tierVn + 1]
             tierMC <- cbind(tierMC, tierVn)
         }
         dimnames(tierMC) <- dimnames(tierMN)
@@ -238,7 +220,8 @@ function(x,
         ## Accuracy of full, S+A and S models
 
         for(methodC in methodVc) {
-            accuracyMN["Full", methodC] <- fsiResLs[[methodC]]$evaluation
+            ## accuracyMN["Full", methodC] <- fsiResLs[[methodC]]$accuracyN
+            accuracyMN["Full", methodC] <- accuVn[methodC]
 
             ## 'S+A' outputs
             datasetMethodLs <- datasetLs
@@ -248,13 +231,13 @@ function(x,
             if(length(signatureLsAS[[methodC]])) {
                 datasetMethodLs$variableMetadata <- datasetMethodLs$variableMetadata[signatureLsAS[[methodC]], , drop = FALSE]
                 datasetMethodLs$dataMatrix  <- datasetMethodLs$dataMatrix[ , signatureLsAS[[methodC]], drop = FALSE]
-                my.fsi <- fsi(datasetMethodLs,
-                              "response",
-                              methodC,
-                              nboot = bootI,
-                              nperm = 0,
-                              return.full.model = TRUE)
-                accuracyMN["AS", methodC] <- my.fsi$evaluation
+                my.fsi <- getBootSignificanceF(datasetMethodLs,
+                                           "respC",
+                                           methodC,
+                                           bootI = bootI,
+                                           permI = 0,
+                                           fullModelL = TRUE)
+                accuracyMN["AS", methodC] <- my.fsi$accuracyN
                 modelLsAS[[methodC]] <- my.fsi$model
             }
 
@@ -266,13 +249,13 @@ function(x,
             if(length(signatureLs[[methodC]])) {
                 datasetMethodLs$variableMetadata <- datasetMethodLs$variableMetadata[signatureLs[[methodC]], , drop = FALSE]
                 datasetMethodLs$dataMatrix  <- datasetMethodLs$dataMatrix[ , signatureLs[[methodC]], drop = FALSE]
-                my.fsi <- fsi(datasetMethodLs,
-                              "response",
-                              methodC,
-                              nboot = bootI,
-                              nperm = 0,
-                              return.full.model = TRUE)
-                accuracyMN["S", methodC] <- my.fsi$evaluation
+                my.fsi <- getBootSignificanceF(datasetMethodLs,
+                                           "respC",
+                                           methodC,
+                                           bootI = bootI,
+                                           permI = 0,
+                                           fullModelL = TRUE)
+                accuracyMN["S", methodC] <- my.fsi$accuracyN
                 modelLs[[methodC]] <- my.fsi$model
             }
         }
@@ -280,6 +263,24 @@ function(x,
         xSubMN <- xMN[, signatureLs[["complete"]], drop = FALSE] ## for boxplotting
         signatureLsAS[["complete"]] <- rownames(tierMC)[apply(tierMC, 1, function(rowVc) sum(rowVc %in% c("S", "A")) > 0)]
         xSubMNAS <- xMN[, signatureLsAS[["complete"]], drop = FALSE] ## for boxplotting
+
+    } else {
+
+        tierMC <- matrix("E", nrow = nrow(tierMN), ncol = ncol(tierMN),
+                         dimnames = dimnames(tierMN))
+
+        ## Accuracy of full model
+
+        for(methodC in methodVc) {
+
+            accuracyMN["Full", methodC] <- accuVn[methodC]
+
+            xSubMN <- xMN[, signatureLs[["complete"]], drop = FALSE] ## for boxplotting
+
+            xSubMNAS <- xMN[, signatureLsAS[["complete"]], drop = FALSE] ## for boxplotting
+
+        }
+
     }
 
     AS <- list(modelLs = modelLsAS,
@@ -307,7 +308,8 @@ function(x,
     ## Plotting
     ##---------
 
-    if(!is.null(bsg@accuracyMN) && plotL)
+    ## if(!is.null(bsg@accuracyMN) && plotL)
+    if(!all(is.na(bsg@accuracyMN["S", ])) && plotL)
         plot(bsg)
 
     ## Closing connection
@@ -774,7 +776,8 @@ setMethod("show",
 
               tierMaxC <- "S"
 
-              if(is.null(object@accuracyMN)) {
+              ## if(is.null(object@accuracyMN)) {
+              if(all(is.na(object@accuracyMN["S", ]))) {
 
                   cat("No significant variable found for the selected classifier(s): '", paste(object@methodVc, collapse = "', '"), "'\n", sep = "")
 
