@@ -1,19 +1,21 @@
+CHANGES IN VERSION 1.0.6
+------------------------------
+INTERNAL MODIFICATIONS
+
+    o versioning update
+    o unit tests silenced on windows platforms because of errors on the moscato2 bioc platform running on windows 8
+
 CHANGES IN VERSION 1.0.4
 ------------------------------
-INTERNAL MODIFICATION
-
-    o Versioning update
-
-CHANGES IN VERSION 1.0.2
-------------------------------
-PACKAGE MODIFICATION
-
-    o Citation update
-
 INTERNAL MODIFICATIONS
 
     o bug fixed (when tierMN contains 0 only)
     o 'show' method: better handling of messages when no signature is found
+
+CHANGES IN VERSION 1.0.2
+------------------------------
+INTERNAL MODIFICATIONS
+
     o unit tests: test_biosign_diaplasma and test_biosign_sacurine added
     o internal renaming of variables (to indicate their type) and functions (to facilitate their understanding)
     o PLS-DA: to avoid errors during generation of models, the number of predictive components is at least 1   
