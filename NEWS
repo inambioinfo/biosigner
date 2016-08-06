@@ -1,3 +1,9 @@
+CHANGES IN VERSION 1.0.8
+------------------------------
+INTERNAL MODIFICATIONS
+
+    o error message fixed when missing values in the accuracy vector obtained by the bootstrap step
+
 CHANGES IN VERSION 1.0.6
 ------------------------------
 INTERNAL MODIFICATIONS

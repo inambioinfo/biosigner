@@ -170,7 +170,8 @@ getSignificanceF <- function(bootModelLs = NULL,
                 ## performs better than on the true test subset
             }
         }
-        signifN <- sum(accuracyVn <= 0) / (bootI * permI)
+
+        signifN <- sum(accuracyVn <= 0, na.rm = TRUE) / (bootI * permI)
         if(signifN <= pvalN){
             ## i.e. predictions on the randomized test subset rarely outperforms the true test subset
             ## i.e. some of the permutated features are relevant
