@@ -1,36 +1,25 @@
-## Package: biosigner
-## Details: Methods for biosign objects:
-##             biosign, show, plot, predict
-##             getAccuracyMN, getSignatureLs
-## Authors: Philippe Rinaudo and Etienne Thevenot (CEA)
+#' @rdname biosign
+#' @export
+setMethod("biosign", signature(x = "ExpressionSet"),
+          function(x, y, ...) {
 
-## Note: Hierarchy of helper function calls:
-##
-##1..biosign                           methods-biosign_class
-##   2..getTierF                       helpers_significance
-##      3..getBootSignificanceF        helpers_significance
-##         4..getBootModelF            helpers_model
-##            5..getBootExtract        helpers_bootstrap
-##            5..getModelAccuRankF     helpers_model
-##               6..getBootTrainxF     helpers_bootstrap
-##               6..getBootTrainyF     helpers_bootstrap
-##               6..getBootTestxF      helpers_bootstrap
-##               6..getBootTestyF      helpers_bootstrap
-##               6..getModelF          helpers_model
-##               6..getPredictionF     helpers_model
-##               6..getAccuracyF       helpers_model
-##               6..getImportanceF     helpers_model
-##            5..getBootTestIndF       helpers_bootstrap
-##            5..getBootSummaryF       helpers_model
-##         4..getSignificanceF         helpers_significance
-##            5..getPredictionF        helpers_model
-##            5..getAccuracyF          helpers_model
-##   2..getBootSignificanceF           helpers_significance
-##      3..getModelF                   helpers_model
+              datMN <- t(exprs(x))
 
+              samDF <- pData(x)
 
-setGeneric("biosign", function(x, ...) standardGeneric("biosign"))
+              if(!(y %in% colnames(samDF))) {
+                  stop("'y' must be the name of a column of the phenoData slot of the 'ExpressionSet' object", call. = FALSE)
+              } else {
+                  rspFcVcn <- samDF[, y]
+                  bsg <- biosign(datMN, rspFcVcn, ...)
+              }
 
+              bsg
+
+          })
+
+#' @rdname biosign
+#' @export
 setMethod("biosign", signature(x = "data.frame"),
           function(x, ...) {
               if(!all(sapply(x, data.class) == "numeric")) {
@@ -41,6 +30,9 @@ setMethod("biosign", signature(x = "data.frame"),
               bsg
           })
 
+
+#' @rdname biosign
+#' @export
 setMethod("biosign", signature(x = "matrix"),
 function(x,
          y,
@@ -324,14 +316,64 @@ function(x,
     return(invisible(bsg))
 
 
-}) ## biosign
+})
 
+
+#' Plot method for 'biosign' signature objects
+#'
+#' Displays classifier tiers or individual boxplots from selected features
+#'
+#' @aliases plot.biosign plot,biosign-method
+#' @param x An S4 object of class \code{biosign}, created by the \code{biosign}
+#' function.
+#' @param y Currently not used.
+#' @param tierMaxC Character: Maximum level of tiers to display: Either 'S' and
+#' 'A', (for boxplot), or also 'B', 'C', 'D', and 'E' (for tiers) by decreasing
+#' number of selections
+#' @param typeC Character: Plot type; either 'tier' [default] displaying the
+#' comparison of signatures up to the selected 'tierMaxC' or 'boxplot' showing
+#' the individual boxplots of the features selected by all the classifiers
+#' @param file.pdfC Character: Figure filename ending with '.pdf'; default is
+#' NULL (no saving; displaying instead)
+#' @param .sinkC Character: Name of the file for R output diversion [default =
+#' NULL: no diversion]; Diversion of messages is required for the integration
+#' into Galaxy
+#' @param ... Currently not used.
+#' @return A plot is created on the current graphics device.
+#' @author Philippe Rinaudo and Etienne Thevenot (CEA)
+#' @examples
+#'
+#' ## loading the diaplasma dataset
+#'
+#' data(diaplasma)
+#' attach(diaplasma)
+#'
+#' ## restricting to a smaller dataset for this example
+#'
+#' featureSelVl <- variableMetadata[, "mzmed"] >= 490 & variableMetadata[, "mzmed"] < 500
+#' dataMatrix <- dataMatrix[, featureSelVl]
+#' variableMetadata <- variableMetadata[featureSelVl, ]
+#'
+#' ## signature selection for all 3 classifiers
+#' ## a bootI = 5 number of bootstraps is used for this example
+#' ## we recommend to keep the default bootI = 50 value for your analyzes
+#'
+#' set.seed(123)
+#' diaSign <- biosign(dataMatrix, sampleMetadata[, "type"], bootI = 5)
+#'
+#' ## individual boxplot of the selected signatures
+#'
+#' plot(diaSign, typeC = "boxplot")
+#'
+#' detach(diaplasma)
+#'
+#' @rdname plot
+#' @export
 setMethod("plot", signature(x = "biosign"),
           function(x,
                    y,
                    tierMaxC = "S",
                    typeC = c("tier", "boxplot")[1],
-
                    file.pdfC = NULL,
                    .sinkC = NULL,
                    ...) {
@@ -392,8 +434,15 @@ setMethod("plot", signature(x = "biosign"),
 
     if(is.null(file.pdfC)) {
         dev.new()
-    } else
-        pdf(file.pdfC)
+    } else {
+        if(grepl("pdf$", file.pdfC)) {
+            pdf(file.pdfC)
+        } else if(grepl("png$", file.pdfC)) {
+            png(file.pdfC)
+        } else
+            stop("'file.pdfC' argument must have a '.pdf' extension",
+                 call. = FALSE)
+    }
 
     switch(typeC,
 
@@ -671,9 +720,69 @@ setMethod("plot", signature(x = "biosign"),
     if(!is.null(.sinkC)) ## Used in the Galaxy module
         sink()
 
-}) ## plot
+          })
 
 
+#' Predict method for 'biosign' signature objects
+#'
+#' This function predicts values based upon \code{biosign} classifiers trained
+#' on the 'S' signature
+#'
+#'
+#' @aliases predict.biosign predict,biosign-method
+#' @param object An S4 object of class \code{biosign}, created by
+#' \code{biosign} function.
+#' @param newdata Either a data frame or a matrix, containing numeric columns
+#' only, with column names identical to the 'x' used for model training with
+#' 'biosign'.
+#' @param tierMaxC Character: Maximum level of tiers to display: Either 'S'or
+#' 'A'.
+#' @param ... Currently not used.
+#' @return Data frame with the predictions for each classifier as factor
+#' columns.
+#' @author Philippe Rinaudo and Etienne Thevenot (CEA)
+#' @examples
+#'
+#' ## loading the diaplasma dataset
+#'
+#' data(diaplasma)
+#' attach(diaplasma)
+#'
+#' ## restricting to a smaller dataset for this example
+#'
+#' featureSelVl <- variableMetadata[, "mzmed"] >= 490 & variableMetadata[, "mzmed"] < 500
+#' dataMatrix <- dataMatrix[, featureSelVl]
+#' variableMetadata <- variableMetadata[featureSelVl, ]
+#'
+#' ## training the classifiers
+#' ## a bootI = 5 number of bootstraps is used for this example
+#' ## we recommend to keep the default bootI = 50 value for your analyzes
+#'
+#' set.seed(123)
+#' diaSign <- biosign(dataMatrix, sampleMetadata[, "type"], bootI = 5)
+#'
+#' ## fitted values (for the subsets restricted to the 'S' signatures)
+#' sFitDF <- predict(diaSign)
+#'
+#' ## confusion tables
+#' print(lapply(sFitDF, function(predFc) table(actual = sampleMetadata[,
+#' "type"], predicted = predFc)))
+#'
+#' ## balanced accuracies
+#' sapply(sFitDF, function(predFc) { conf <- table(sampleMetadata[,
+#' "type"], predFc)
+#' conf <- sweep(conf, 1, rowSums(conf), "/")
+#' mean(diag(conf))
+#' })
+#' ## note that these values are slightly different from the accuracies
+#' ## returned by biosign because the latter are computed by using the
+#' ## resampling scheme selected by the bootI or crossvalI arguments
+#' getAccuracyMN(diaSign)["S", ]
+#'
+#' detach(diaplasma)
+#'
+#' @rdname predict
+#' @export
 setMethod("predict", signature(object = "biosign"),
           function(object, newdata, tierMaxC = "S", ...)
           {
@@ -766,9 +875,44 @@ setMethod("predict", signature(object = "biosign"),
 
     }
 
-}) ## end of predict
+          })
 
 
+#' Show method for 'biosign' signature objects
+#'
+#' Prints the selected features and the accuracies of the classifiers.
+#'
+#' @aliases show.biosign show,biosign-method
+#' @param object An S4 object of class \code{biosign}, created by the
+#' \code{biosign} function.
+#' @return Invisible.
+#' @author Philippe Rinaudo and Etienne Thevenot (CEA)
+#' @examples
+#'
+#' ## loading the diaplasma dataset
+#'
+#' data(diaplasma)
+#' attach(diaplasma)
+#'
+#' ## restricting to a smaller dataset for this example
+#'
+#' featureSelVl <- variableMetadata[, "mzmed"] >= 490 & variableMetadata[, "mzmed"] < 500
+#' dataMatrix <- dataMatrix[, featureSelVl]
+#' variableMetadata <- variableMetadata[featureSelVl, ]
+#'
+#' ## signature selection for all 3 classifiers
+#' ## a bootI = 5 number of bootstraps is used for this example
+#' ## we recommend to keep the default bootI = 50 value for your analyzes
+#'
+#' set.seed(123)
+#' diaSign <- biosign(dataMatrix, sampleMetadata[, "type"], bootI = 5)
+#'
+#' diaSign
+#'
+#' detach(diaplasma)
+#'
+#' @rdname show
+#' @export
 setMethod("show",
           "biosign",
           function(object)
@@ -809,19 +953,17 @@ setMethod("show",
 
               }
 
-          }) ## end of show
+          })
 
-setGeneric("getAccuracyMN",
-           function(object, ...) {standardGeneric("getAccuracyMN")})
-
+#' @rdname getAccuracyMN
+#' @export
 setMethod("getAccuracyMN", "biosign",
           function(object) {
               return(object@accuracyMN)
           })
 
-setGeneric("getSignatureLs",
-           function(object, ...) {standardGeneric("getSignatureLs")})
-
+#' @rdname getSignatureLs
+#' @export
 setMethod("getSignatureLs", "biosign",
           function(object, tierC = c("S", "AS")[1]) {
               if(tierC == "S") {

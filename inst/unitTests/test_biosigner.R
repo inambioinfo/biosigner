@@ -179,6 +179,8 @@ test_biosign_sacurine <- function() {
 
     winL <- FALSE ## unit tests silenced on windows platforms because of errors on the moscato2 bioc platform running on windows 8
 
+    library(ropls)
+
     data(sacurine)
 
     set.seed(123)
