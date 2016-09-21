@@ -27,6 +27,9 @@ test_biosign_plsda <- function(){
                     "A")
         checkEqualsNumeric(biosignLs@accuracyMN["S", "plsda"],
                            0.7365702, tolerance = 1e-7)
+
+        library(ropls)
+
         checkEqualsNumeric(getSummaryDF(biosignLs@modelLs[["plsda"]])[, "Q2(cum)"],
                            0.271, tolerance = 1e-6)
 
