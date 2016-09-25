@@ -1,3 +1,10 @@
+CHANGES IN VERSION 1.1.14
+------------------------------
+INTERNAL MODIFICATIONS
+
+    o Biobase import restricted to ExpressionSet, exprs, and pData
+    function/methods to avoid warning (conflict on 'combine' with randomForest)
+
 CHANGES IN VERSION 1.1.12
 ------------------------------
 INTERNAL MODIFICATIONS

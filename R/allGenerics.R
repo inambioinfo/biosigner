@@ -7,6 +7,7 @@
 #' @name biosign
 #' @rdname biosign
 #' @aliases biosign biosign,data.frame-method biosign,matrix-method
+#' biosign,ExpressionSet-method
 #' @docType methods
 #' @param x Numerical data frame or matrix (observations x variables), or
 #' ExpressionSet object with non empty assayData and phenoData; NAs are allowed
