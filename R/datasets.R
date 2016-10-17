@@ -1,0 +1,40 @@
+#' Analysis of plasma from diabetic patients by LC-HRMS
+#'
+#' Plasma samples from 69 diabetic patients were analyzed by reversed-phase
+#' liquid chromatography coupled to high-resolution mass spectrometry (Orbitrap
+#' Exactive) in the negative ionization mode. The raw data were pre-processed
+#' with XCMS and CAMERA (5,501 features), corrected for signal drift, log10
+#' transformed, and annotated with an in-house spectral database. The patient's
+#' age, body mass index, and diabetic type are recorded. These three clinical
+#' covariates are strongly associated, most of the type II patients being older
+#' and with a higher bmi than the type I individuals.
+#'
+#' @name diaplasma
+#' @docType data
+#' @format A list with the following elements:
+#' \itemize{
+#' \item dataMatrix: a 69 samples x
+#' 5,501 features matrix of numeric type corresponding to the intensity
+#' profiles (values have been log10-transformed),
+#' \item sampleMetadata: a 69 x 3 data frame, with the patients' diabetic type
+#' ('type', factor), age ('age', numeric), and body mass index ('bmi', numeric),
+#' \item variableMetadata: a 5,501 x 8 data frame, with the median m/z ('mzmed',
+#' numeric) and the median retention time in seconds ('rtmed', numeric) from
+#' XCMS, the 'isotopes' (character), 'adduct' (character) and 'pcgroups'
+#' (numeric) annotations from CAMERA, and the names of the m/z and RT matching
+#' compounds from an in-house database of pure spectra from commercial
+#' metabolites ('spiDb', character).
+#' }
+#' @return List containing the 'dataMatrix' matrix (numeric) of data (samples
+#' as rows, variables as columns), the 'sampleMetadata' data frame of sample
+#' metadata, and the variableMetadata data frame of variable metadata. Row
+#' names of 'dataMatrix' and 'sampleMetadata' are identical. Column names of
+#' 'dataMatrix' are identical to row names of 'variableMetadata'. For details
+#' see the 'Format' section above.
+#' @references Rinaudo P., Boudah S., Junot C. and Thevenot E.A. (2016).
+#' biosigner: a new method for the discovery of significant molecular signatures
+#' from omics data. Frontiers in Molecular Biosciences 3.
+#' doi:10.3389/fmolb.2016.00026
+#' @source 'diaplasma' dataset.
+#' @keywords datasets
+NULL
